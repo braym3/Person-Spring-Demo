@@ -8,8 +8,11 @@ public class PersonDTO {
 
     private String occupation;
 
+    private Integer id;
 
-    public PersonDTO(String fullName, Integer oldNess, String occupation) {
+
+    public PersonDTO(Integer id, String fullName, Integer oldNess, String occupation) {
+        this.id = id;
         this.fullName = fullName;
         this.oldNess = oldNess;
         this.occupation = occupation;
@@ -17,6 +20,14 @@ public class PersonDTO {
 
     public PersonDTO() {
     }
+
+    public Integer getId() {
+		return this.id;
+	}
+
+    public void setId(Integer id) {
+		this.id = id;
+	}
 
     public String getFullName() {
         return fullName;

@@ -5,6 +5,9 @@
 
     const output = document.getElementById("output");
     const address = "http://localhost:8080";
+    // create modal
+    let editModal = new bootstrap.Modal(document.getElementById('editModal'));
+    let currentId;
 
     // Get all
     async function getPeople(){
@@ -19,7 +22,7 @@
     }
 
     // Render person
-    function renderPerson({fullName, oldNess, occupation}){
+    function renderPerson({fullName, oldNess, occupation, id}){
         const person = document.createElement("div");
         person.classList.add("col");
         const personCard = document.createElement("div");
@@ -48,20 +51,73 @@
 
         // Adding delete button
         const deleteBtn = document.createElement("button");
-        deleteBtn.innerText = 'DELETE';
-        deleteBtn.classList.add("btn", "btn-danger");
+        deleteBtn.innerHTML = '<i class="fa fa-trash inBtn"></i>';
+        deleteBtn.classList.add("btn", "btn-danger", "card-btn");
         deleteBtn.addEventListener('click', () => deletePerson(id));
         personBody.appendChild(deleteBtn);
-        personCard.appendChild(personBody);
-        person.appendChild(personCard);
+
+        // Adding edit button
+        const editBtn = document.createElement("button");
+        editBtn.innerHTML = '<i class="fa fa-pencil inBtn" style="color: #0d6efc;"></i>';
+        editBtn.classList.add("btn", "btn-outline-primary", "card-btn");
+        editBtn.addEventListener('click', () => updateModal(id));
+        personBody.appendChild(editBtn);
 
         // Adding it to the page
+        personCard.appendChild(personBody);
+        person.appendChild(personCard);
         output.appendChild(person);
     }
 
     async function deletePerson(id) {
         const res = await axios.delete(`${address}/remove/${id}`);
         getPeople();
+    }
+
+    async function updateModal(id){
+        currentId = id;
+        try{
+            const personData = await getPerson(id);
+            // add event listener to 'save' update button
+            const saveBtn = document.getElementById("saveBtn");
+            saveBtn.addEventListener('click', () => updatePerson(id));
+
+            editModal.toggle();
+
+            // Set name input value placeholder text
+            document.getElementById("updateName").value = personData.fullName;
+            // Set age input value placeholder text
+            document.getElementById("updateAge").value = personData.oldNess;
+            // Set occupation input value placeholder text
+            document.getElementById("updateJob").value = personData.occupation;
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    async function updatePerson(){
+        console.log(`selected id = ${currentId}`);
+
+        // get updated input values
+        let updatedName = document.getElementById("updateName").value;
+        let updatedAge = document.getElementById("updateAge").value;
+        let updatedJob = document.getElementById("updateJob").value;
+        
+        
+        const res = await axios.patch(`${address}/update/${currentId}/?name=${updatedName}&age=${updatedAge}&job=${updatedJob}`);
+        console.log(`done`);
+        window.location.reload();
+        getPeople();
+    }
+
+    // Get by id
+    async function getPerson(id){
+        try {
+            const res = await axios.get(`${address}/get/${id}`);
+            return res.data;
+        } catch(e) {
+            console.error(e);
+        }
     }
 
 
@@ -75,7 +131,7 @@
             oldNess: oldNess.value,
             occupation: occupation.value,
             notNiNumber: notNiNumber.value
-        }
+        };
         this.reset();
         fullName.focus();
         try {
